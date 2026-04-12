@@ -1,0 +1,275 @@
+/* ══════════════════════════════════════════
+   MODAL / DIALOG
+   ══════════════════════════════════════════ */
+
+/* ── Backdrop ── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: backdropFadeIn 0.2s ease;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Modal Container ── */
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Modal Header ── */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* ── Modal Body ── */
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Modal Footer ── */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Modal Form Fields ── */
+.modal-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modal-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.modal-form-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.modal-form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+.modal-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+}
+
+/* ── Priority Selector ── */
+.priority-selector {
+  display: flex;
+  gap: 6px;
+}
+
+.priority-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.priority-option:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-tertiary);
+}
+
+.priority-option.selected {
+  border-color: currentColor;
+}
+
+.priority-option.selected.urgent {
+  color: var(--priority-urgent);
+  background: var(--priority-urgent-bg);
+  border-color: var(--priority-urgent);
+}
+
+.priority-option.selected.high {
+  color: var(--priority-high);
+  background: var(--priority-high-bg);
+  border-color: var(--priority-high);
+}
+
+.priority-option.selected.medium {
+  color: var(--priority-medium);
+  background: var(--priority-medium-bg);
+  border-color: var(--priority-medium);
+}
+
+.priority-option.selected.low {
+  color: var(--priority-low);
+  background: var(--priority-low-bg);
+  border-color: var(--priority-low);
+}
+
+/* ── Modal Buttons ── */
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-btn-cancel {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.modal-btn-cancel:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.modal-btn-submit {
+  background: var(--accent);
+  color: white;
+}
+
+.modal-btn-submit:hover {
+  background: var(--accent-hover);
+}
+
+.modal-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-btn-danger {
+  background: var(--danger-subtle);
+  color: var(--danger);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.modal-btn-danger:hover {
+  background: var(--danger);
+  color: white;
+}
+
+/* ── Confirm Dialog ── */
+.confirm-dialog {
+  max-width: 380px;
+}
+
+.confirm-dialog .modal-body {
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.confirm-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.confirm-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.confirm-message {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
