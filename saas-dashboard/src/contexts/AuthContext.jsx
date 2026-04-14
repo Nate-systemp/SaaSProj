@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -63,16 +63,35 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = () => supabase.auth.signOut()
 
+  const updateProfile = async (updates) => {
+    if (!user) return { error: new Error('No user logged in') }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single()
+
+    if (data) {
+      setProfile(data)
+    }
+    return { data, error }
+  }
+
+  const value = useMemo(() => ({
+    user,
+    profile,
+    loading,
+    signUp,
+    signIn,
+    signInWithGoogle,
+    signOut,
+    updateProfile,
+  }), [user, profile, loading])
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      profile,
-      loading,
-      signUp,
-      signIn,
-      signInWithGoogle,
-      signOut,
-    }}>
+    <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
   )

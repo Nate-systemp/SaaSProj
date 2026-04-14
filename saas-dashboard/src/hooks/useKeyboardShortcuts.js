@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const useKeyboardShortcuts = ({ onNewTask, onSearchFocus, onClearFilters, onColumnFilter }) => {
+const useKeyboardShortcuts = ({ onNewTask, onSearchFocus, onClearFilters, onColumnFilter, onTogglePalette }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const tag = e.target.tagName.toLowerCase()
@@ -19,9 +19,10 @@ const useKeyboardShortcuts = ({ onNewTask, onSearchFocus, onClearFilters, onColu
         return
       }
 
-      // Ctrl/Cmd+K — command palette (reserved)
+      // Ctrl/Cmd+K — command palette
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault()
+        onTogglePalette?.()
         return
       }
 
@@ -33,6 +34,10 @@ const useKeyboardShortcuts = ({ onNewTask, onSearchFocus, onClearFilters, onColu
         case 'C':
           e.preventDefault()
           onNewTask?.()
+          break
+        case 't':
+        case 'T':
+          // Toggle theme shortcut
           break
         case '/':
           e.preventDefault()
@@ -66,7 +71,7 @@ const useKeyboardShortcuts = ({ onNewTask, onSearchFocus, onClearFilters, onColu
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [onNewTask, onSearchFocus, onClearFilters, onColumnFilter])
+  }, [onNewTask, onSearchFocus, onClearFilters, onColumnFilter, onTogglePalette])
 }
 
 export default useKeyboardShortcuts

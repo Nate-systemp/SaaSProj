@@ -19,10 +19,20 @@ const Sidebar = ({ activeView, onViewChange }) => {
   const { theme, toggleTheme } = useTheme()
   const { tasks } = useTasks()
   const navigate = useNavigate()
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
 
-  const handleSignOut = async () => {
+  const handleSignOutClick = () => {
+    setShowSignOutConfirm(true)
+  }
+
+  const handleConfirmSignOut = async () => {
     await signOut()
     navigate('/login')
+  }
+
+  // Expose for Command Palette
+  if (typeof window !== 'undefined') {
+    window.__flowboardSignOut = handleSignOutClick
   }
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
@@ -35,13 +45,12 @@ const Sidebar = ({ activeView, onViewChange }) => {
 
   return (
     <div className="sidebar">
-      {/* Logo */}
+      {/* ... (Logo and Nav sections) */}
       <div className="sidebar-logo">
         <div className="logo-mark">F</div>
         <span className="logo-text">FlowBoard</span>
       </div>
 
-      {/* Navigation */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Workspace</div>
 
@@ -93,7 +102,6 @@ const Sidebar = ({ activeView, onViewChange }) => {
         </button>
       </nav>
 
-      {/* Theme */}
       <div className="theme-toggle-container">
         <button className="theme-toggle" onClick={toggleTheme} id="theme-toggle">
           {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
@@ -102,7 +110,6 @@ const Sidebar = ({ activeView, onViewChange }) => {
         </button>
       </div>
 
-      {/* User */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
           <div className="user-avatar">{avatarLetter}</div>
@@ -112,7 +119,7 @@ const Sidebar = ({ activeView, onViewChange }) => {
           </div>
           <button
             className="signout-btn"
-            onClick={handleSignOut}
+            onClick={handleSignOutClick}
             title="Sign out"
             id="signout-btn"
           >
@@ -120,6 +127,37 @@ const Sidebar = ({ activeView, onViewChange }) => {
           </button>
         </div>
       </div>
+
+      {/* Sign Out Confirmation */}
+      {showSignOutConfirm && (
+        <div className="modal-backdrop" style={{ zIndex: 3000 }} onClick={() => setShowSignOutConfirm(false)}>
+          <div className="modal confirm-dialog" onClick={e => e.stopPropagation()}>
+            <div className="modal-body">
+              <div className="confirm-icon danger">
+                <LogOut size={22} />
+              </div>
+              <h3 className="confirm-title">Sign out?</h3>
+              <p className="confirm-message">
+                You will need to sign in again to access your board.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-btn modal-btn-cancel"
+                onClick={() => setShowSignOutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-btn modal-btn-danger"
+                onClick={handleConfirmSignOut}
+              >
+                Sign out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

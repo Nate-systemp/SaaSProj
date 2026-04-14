@@ -1,0 +1,194 @@
+/* ═══════════════════════════════════════
+   SIDE PANEL — editorial task details
+   ═══════════════════════════════════════ */
+
+.panel-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 24px -12px rgba(0, 0, 0, 0.4);
+  animation: panelIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* ── Header ── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.panel-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.panel-action-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.panel-action-btn.danger:hover {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+/* ── Scrollable Content ── */
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Title Input (Large) ── */
+.panel-title-textarea {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  width: 100%;
+  resize: none;
+  line-height: 1.3;
+  padding: 0;
+  letter-spacing: -0.02em;
+}
+
+.panel-title-textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+/* ── Metadata Grid ── */
+.panel-meta-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.panel-meta-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* Custom dropdowns/inputs for panel */
+.panel-select, .panel-date-input, .panel-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.panel-select:focus, .panel-date-input:focus, .panel-input:focus {
+  border-color: var(--border-focus);
+}
+
+/* ── Description ── */
+.panel-description-textarea {
+  min-height: 120px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  resize: vertical;
+  padding: 0;
+}
+
+.panel-description-textarea::placeholder {
+  color: var(--text-quaternary);
+}
+
+/* ── Footer / Status Bar ── */
+.panel-footer {
+  padding: 12px 24px;
+  background: var(--bg-wash);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.panel-save-btn {
+  background: var(--accent);
+  color: white;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background var(--duration-fast);
+}
+
+.panel-save-btn:hover { background: var(--accent-hover); }
+.panel-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Overlay for panel (non-blocking) ── */
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  /* invisible so board remains interactive, but catch background clicks if needed */
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .panel-container {
+    max-width: 100%;
+  }
+}

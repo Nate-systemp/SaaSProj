@@ -23,6 +23,7 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
   const [dueDate, setDueDate] = useState(task?.due_date || '')
   const [saving, setSaving] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
 
   const titleRef = useRef(null)
 
@@ -31,14 +32,23 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
     setTimeout(() => titleRef.current?.focus(), 100)
   }, [])
 
+  const handleCloseAttempt = () => {
+    const hasContent = title.trim() || description.trim() || label.trim() || dueDate
+    if (hasContent && !isEditing) {
+      setShowDiscardConfirm(true)
+    } else {
+      onClose()
+    }
+  }
+
   // Close on Escape
   useEffect(() => {
     const handleKey = (e) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') handleCloseAttempt()
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [onClose])
+  }, [onClose, title, description, label, dueDate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -77,7 +87,7 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
 
   // Click backdrop to close
   const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) onClose()
+    if (e.target === e.currentTarget) handleCloseAttempt()
   }
 
   return (
@@ -88,13 +98,14 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
           <h2 className="modal-title">
             {isEditing ? 'Edit Task' : 'Create New Task'}
           </h2>
-          <button className="modal-close" onClick={onClose} aria-label="Close">
+          <button className="modal-close" onClick={handleCloseAttempt} aria-label="Close">
             <X size={18} />
           </button>
         </div>
 
         {/* Body */}
         <form onSubmit={handleSubmit}>
+          {/* ... (existing form body) */}
           <div className="modal-body">
             {/* Title */}
             <div className="modal-form-group">
@@ -200,7 +211,7 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
                 Delete
               </button>
             )}
-            <button type="button" className="modal-btn modal-btn-cancel" onClick={onClose}>
+            <button type="button" className="modal-btn modal-btn-cancel" onClick={handleCloseAttempt}>
               Cancel
             </button>
             <button
@@ -216,37 +227,35 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
 
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setShowDeleteConfirm(false)}
-          style={{ zIndex: 1001 }}
-        >
-          <div
-            className="modal confirm-dialog"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="modal-backdrop" onClick={() => setShowDeleteConfirm(false)} style={{ zIndex: 1001 }}>
+          <div className="modal confirm-dialog" onClick={(e) => e.stopPropagation()}>
             <div className="modal-body">
-              <div className="confirm-icon">
-                <Trash2 size={22} />
-              </div>
+              <div className="confirm-icon"><Trash2 size={22} /></div>
               <h3 className="confirm-title">Delete task?</h3>
-              <p className="confirm-message">
-                "{task?.title}" will be permanently deleted. You can undo this action for 5 seconds after deletion.
-              </p>
+              <p className="confirm-message">This action cannot be undone.</p>
             </div>
             <div className="modal-footer">
-              <button
-                className="modal-btn modal-btn-cancel"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="modal-btn modal-btn-danger"
-                onClick={handleDelete}
-              >
-                Delete
-              </button>
+              <button className="modal-btn modal-btn-cancel" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+              <button className="modal-btn modal-btn-danger" onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Discard Confirmation */}
+      {showDiscardConfirm && (
+        <div className="modal-backdrop" onClick={() => setShowDiscardConfirm(false)} style={{ zIndex: 1001 }}>
+          <div className="modal confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-body">
+              <div className="confirm-icon warning">
+                <X size={22} />
+              </div>
+              <h3 className="confirm-title">Discard changes?</h3>
+              <p className="confirm-message">You have unsaved work in this task. Are you sure you want to discard it?</p>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-btn modal-btn-cancel" onClick={() => setShowDiscardConfirm(false)}>Continue editing</button>
+              <button className="modal-btn modal-btn-danger" onClick={onClose}>Discard</button>
             </div>
           </div>
         </div>

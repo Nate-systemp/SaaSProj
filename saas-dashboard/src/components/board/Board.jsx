@@ -12,6 +12,7 @@ import { useTasks } from '../../contexts/TaskContext'
 import Column from './Column'
 import TaskCard from './TaskCard'
 import TaskModal from './TaskModal'
+import TaskDetailPanel from './TaskDetailPanel'
 import '../../styles/board.css'
 
 const COLUMNS = [
@@ -24,8 +25,8 @@ const COLUMNS = [
 const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading }) => {
   const { tasks, moveTask } = useTasks()
   const [activeTask, setActiveTask] = useState(null)
-  const [editingTask, setEditingTask] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null) // For Detail Panel
+  const [showModal, setShowModal] = useState(false) // For Creation only
   const [modalDefaultStatus, setModalDefaultStatus] = useState('backlog')
 
   const sensors = useSensors(
@@ -54,9 +55,8 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
     return result
   }, [tasks, searchQuery, priorityFilter])
 
-  // Determine which columns to show based on view + column filter
+  // Determine which columns to show 
   const visibleColumns = useMemo(() => {
-    // Column filter (1-4 shortcuts) takes priority
     if (columnFilter) {
       return COLUMNS.filter(c => c.id === columnFilter)
     }
@@ -124,21 +124,17 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
 
   const handleDragCancel = () => setActiveTask(null)
 
-  // Modal
+  // Creation Modal
   const handleNewTask = (status = 'backlog') => {
-    setEditingTask(null)
+    setSelectedTask(null)
     setModalDefaultStatus(status)
     setShowModal(true)
   }
 
+  // Editing Side Panel
   const handleEditTask = (task) => {
-    setEditingTask(task)
-    setShowModal(true)
-  }
-
-  const handleCloseModal = () => {
     setShowModal(false)
-    setEditingTask(null)
+    setSelectedTask(task)
   }
 
   // Expose for keyboard shortcuts
@@ -146,23 +142,7 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
     window.__flowboardNewTask = handleNewTask
   }
 
-  // Settings view
-  if (activeView === 'settings') {
-    return (
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--text-tertiary)',
-        fontSize: '13px',
-      }}>
-        Settings coming soon
-      </div>
-    )
-  }
-
-  // Loading state — skeleton cards
+  // Loading state
   if (loading) {
     return (
       <div className="board" id="kanban-board">
@@ -175,11 +155,7 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
             </div>
             <div className="column-tasks">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="skeleton-card"
-                  style={{ animationDelay: `${(i - 1) * 80}ms` }}
-                >
+                <div key={i} className="skeleton-card" style={{ animationDelay: `${(i - 1) * 80}ms` }}>
                   <div className="skeleton skeleton-line-sm" />
                   <div className="skeleton skeleton-line-lg" />
                   <div className="skeleton skeleton-line-md" />
@@ -223,11 +199,19 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
         </DragOverlay>
       </DndContext>
 
+      {/* Creation focused modal */}
       {showModal && (
         <TaskModal
-          task={editingTask}
           defaultStatus={modalDefaultStatus}
-          onClose={handleCloseModal}
+          onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {/* Editorial side panel for details/editing */}
+      {selectedTask && (
+        <TaskDetailPanel
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
         />
       )}
     </>

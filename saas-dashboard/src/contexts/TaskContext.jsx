@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import toast from 'react-hot-toast'
@@ -189,7 +189,7 @@ export const TaskProvider = ({ children }) => {
   }, [state.board])
 
   // ── CRUD Operations ──
-  const createTask = async ({ title, description, status = 'backlog', priority = 'medium', label, due_date }) => {
+  const createTask = useCallback(async ({ title, description, status = 'backlog', priority = 'medium', label, due_date }) => {
     if (!state.board || !user) return
 
     // Calculate next position
@@ -220,9 +220,9 @@ export const TaskProvider = ({ children }) => {
 
     toast.success('Task created')
     return data
-  }
+  }, [state.board, state.tasks, user])
 
-  const updateTask = async (taskId, updates) => {
+  const updateTask = useCallback(async (taskId, updates) => {
     const { error } = await supabase
       .from('tasks')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -236,9 +236,9 @@ export const TaskProvider = ({ children }) => {
 
     toast.success('Task updated')
     return true
-  }
+  }, [])
 
-  const moveTask = async (taskId, newStatus, newPosition) => {
+  const moveTask = useCallback(async (taskId, newStatus, newPosition) => {
     // Optimistic update
     dispatch({
       type: 'UPDATE_TASK',
@@ -260,9 +260,9 @@ export const TaskProvider = ({ children }) => {
       // Refetch to revert
       fetchTasks(state.board.id)
     }
-  }
+  }, [state.board?.id, fetchTasks])
 
-  const deleteTask = async (taskId) => {
+  const deleteTask = useCallback(async (taskId) => {
     // Find the task before deleting (for undo)
     const taskToDelete = state.tasks.find(t => t.id === taskId)
 
@@ -311,29 +311,29 @@ export const TaskProvider = ({ children }) => {
       ),
       { duration: 5000 }
     )
-  }
+  }, [state.tasks])
 
   // ── Helpers ──
-  const getTasksByStatus = (status) => {
+  const getTasksByStatus = useCallback((status) => {
     return state.tasks
       .filter(t => t.status === status)
       .sort((a, b) => a.position - b.position)
-  }
+  }, [state.tasks])
+
+  const value = useMemo(() => ({
+    tasks: state.tasks,
+    board: state.board,
+    loading: state.loading,
+    createTask,
+    updateTask,
+    moveTask,
+    deleteTask,
+    getTasksByStatus,
+    fetchTasks,
+  }), [state.tasks, state.board, state.loading, createTask, updateTask, moveTask, deleteTask, getTasksByStatus, fetchTasks])
 
   return (
-    <TaskContext.Provider
-      value={{
-        tasks: state.tasks,
-        board: state.board,
-        loading: state.loading,
-        createTask,
-        updateTask,
-        moveTask,
-        deleteTask,
-        getTasksByStatus,
-        fetchTasks,
-      }}
-    >
+    <TaskContext.Provider value={value}>
       {children}
     </TaskContext.Provider>
   )
