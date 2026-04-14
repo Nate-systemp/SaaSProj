@@ -1,13 +1,8 @@
-/* ══════════════════════════════════════════
-   DASHBOARD LAYOUT
-   ══════════════════════════════════════════ */
-
 .dashboard {
   display: flex;
   height: 100vh;
   overflow: hidden;
   background: var(--bg-primary);
-  transition: background-color var(--transition-smooth);
 }
 
 .dashboard-main {
@@ -18,7 +13,6 @@
   min-width: 0;
 }
 
-/* ── Responsive: tablet/mobile ── */
 @media (max-width: 768px) {
   .dashboard {
     flex-direction: column;

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { Search, Filter, Plus, X, Check } from 'lucide-react'
+import { Search, SlidersHorizontal, Plus, X, Check } from 'lucide-react'
 import '../../styles/header.css'
 
 const PRIORITY_OPTIONS = [
-  { value: null, label: 'All Priorities', color: 'var(--text-tertiary)' },
+  { value: null, label: 'All', color: 'var(--text-quaternary)' },
   { value: 'urgent', label: 'Urgent', color: 'var(--priority-urgent)' },
   { value: 'high', label: 'High', color: 'var(--priority-high)' },
   { value: 'medium', label: 'Medium', color: 'var(--priority-medium)' },
@@ -17,102 +17,114 @@ const Header = ({
   onPriorityFilterChange,
   onNewTask,
   taskCount,
+  activeView,
 }) => {
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
+  const [showFilter, setShowFilter] = useState(false)
   const filterRef = useRef(null)
   const searchRef = useRef(null)
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClick = (e) => {
       if (filterRef.current && !filterRef.current.contains(e.target)) {
-        setShowFilterDropdown(false)
+        setShowFilter(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Expose search ref for keyboard shortcut focus
   useEffect(() => {
     window.__flowboardSearchRef = searchRef
     return () => { delete window.__flowboardSearchRef }
   }, [])
 
+  // Dynamic title based on view
+  const viewTitles = {
+    board: 'Board',
+    active: 'Active Tasks',
+    done: 'Completed',
+    settings: 'Settings',
+  }
+
   return (
     <div className="header">
       <div className="header-left">
-        <h1 className="board-title">My Board</h1>
-        {taskCount > 0 && (
-          <span className="board-title-badge">{taskCount} tasks</span>
+        <h1 className="board-title">{viewTitles[activeView] || 'Board'}</h1>
+        {taskCount > 0 && activeView !== 'settings' && (
+          <span className="board-title-badge">{taskCount}</span>
         )}
       </div>
 
       <div className="header-right">
-        {/* Search */}
-        <div className="search-bar" id="search-bar">
-          <Search size={14} />
-          <input
-            ref={searchRef}
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            id="search-input"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => onSearchChange('')}
-              style={{ display: 'flex', padding: '2px' }}
-              aria-label="Clear search"
-            >
-              <X size={12} />
-            </button>
-          )}
-          <span className="search-shortcut">/</span>
-        </div>
-
-        {/* Filter */}
-        <div className="filter-dropdown-wrapper" ref={filterRef}>
-          <button
-            className={`filter-btn ${priorityFilter ? 'active' : ''}`}
-            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            id="filter-btn"
-          >
-            <Filter size={14} />
-            <span>Filter</span>
-            {priorityFilter && <span className="filter-badge">1</span>}
-          </button>
-
-          {showFilterDropdown && (
-            <div className="filter-dropdown" id="filter-dropdown">
-              <div className="filter-dropdown-label">Priority</div>
-              {PRIORITY_OPTIONS.map((opt) => (
+        {activeView !== 'settings' && (
+          <>
+            {/* Search */}
+            <div className="search-bar" id="search-bar">
+              <Search size={13} />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search…"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                id="search-input"
+              />
+              {searchQuery ? (
                 <button
-                  key={opt.value || 'all'}
-                  className={`filter-option ${priorityFilter === opt.value ? 'selected' : ''}`}
-                  onClick={() => {
-                    onPriorityFilterChange(opt.value)
-                    setShowFilterDropdown(false)
-                  }}
+                  onClick={() => onSearchChange('')}
+                  style={{ display: 'flex' }}
+                  aria-label="Clear search"
                 >
-                  <span
-                    className="filter-option-dot"
-                    style={{ background: opt.color }}
-                  />
-                  <span>{opt.label}</span>
-                  <Check size={14} className="filter-option-check" />
+                  <X size={11} />
                 </button>
-              ))}
+              ) : (
+                <span className="search-shortcut">/</span>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* New Task Button */}
-        <button className="new-task-btn" onClick={onNewTask} id="new-task-btn">
-          <Plus size={16} />
-          <span>New Task</span>
-        </button>
+            {/* Filter */}
+            <div className="filter-dropdown-wrapper" ref={filterRef}>
+              <button
+                className={`header-icon-btn ${priorityFilter ? 'active' : ''}`}
+                onClick={() => setShowFilter(!showFilter)}
+                id="filter-btn"
+                title="Filter by priority"
+              >
+                <SlidersHorizontal size={15} />
+                {priorityFilter && <span className="badge-dot" />}
+              </button>
+
+              {showFilter && (
+                <div className="filter-dropdown" id="filter-dropdown">
+                  <div className="filter-dropdown-label">Priority</div>
+                  {PRIORITY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value || 'all'}
+                      className={`filter-option ${priorityFilter === opt.value ? 'selected' : ''}`}
+                      onClick={() => {
+                        onPriorityFilterChange(opt.value)
+                        setShowFilter(false)
+                      }}
+                    >
+                      <span
+                        className="filter-option-dot"
+                        style={{ background: opt.color }}
+                      />
+                      <span>{opt.label}</span>
+                      <Check size={12} className="filter-option-check" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* New Task */}
+            <button className="new-task-btn" onClick={onNewTask} id="new-task-btn">
+              <Plus size={14} />
+              <span>New</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   )

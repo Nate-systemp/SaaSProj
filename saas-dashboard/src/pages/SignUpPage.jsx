@@ -30,20 +30,29 @@ const SignUpPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <div className="auth-logo">
-            <span className="auth-logo-icon">⚡</span>
-            <span className="auth-logo-text">FlowBoard</span>
-          </div>
-          <h1 className="auth-title">Create your account</h1>
-          <p className="auth-subtitle">Start organizing your work today</p>
+      {/* Left brand panel */}
+      <div className="auth-brand">
+        <div className="auth-brand-logo">
+          <div className="auth-brand-mark">F</div>
+          <span className="auth-brand-name">FlowBoard</span>
         </div>
+        <div className="auth-brand-tagline">
+          <h2>Start shipping<br />from day one.</h2>
+          <p>Join teams who use FlowBoard to stay on top of everything.</p>
+        </div>
+      </div>
 
-        <div className="auth-card">
+      {/* Right form area */}
+      <div className="auth-container">
+        <div className="auth-inner">
+          <div className="auth-header">
+            <h1 className="auth-title">Create account</h1>
+            <p className="auth-subtitle">Set up your workspace in seconds.</p>
+          </div>
+
           {error && (
-            <div className="auth-error" style={{ marginBottom: '16px' }}>
-              <AlertCircle size={14} />
+            <div className="auth-error">
+              <AlertCircle size={13} />
               <span>{error}</span>
             </div>
           )}
@@ -63,12 +72,12 @@ const SignUpPage = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="signup-email">Email address</label>
+              <label className="form-label" htmlFor="signup-email">Email</label>
               <input
                 id="signup-email"
                 type="email"
                 className="form-input"
-                placeholder="you@example.com"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -93,15 +102,15 @@ const SignUpPage = () => {
 
             <button type="submit" className="auth-btn auth-btn-primary" disabled={loading}>
               {loading && <span className="auth-spinner" />}
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating…' : 'Get started'}
             </button>
           </form>
-        </div>
 
-        <p className="auth-footer">
-          Already have an account?{' '}
-          <Link to="/login" className="auth-link">Sign in</Link>
-        </p>
+          <p className="auth-footer">
+            Have an account?{' '}
+            <Link to="/login" className="auth-link">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -1,18 +1,20 @@
+import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useTasks } from '../../contexts/TaskContext'
 import { useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
+  Inbox,
+  CheckCircle2,
   Settings,
   LogOut,
   Sun,
   Moon,
-  Layers,
 } from 'lucide-react'
 import '../../styles/sidebar.css'
 
-const Sidebar = () => {
+const Sidebar = ({ activeView, onViewChange }) => {
   const { user, profile, signOut } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const { tasks } = useTasks()
@@ -26,51 +28,81 @@ const Sidebar = () => {
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
   const avatarLetter = displayName[0]?.toUpperCase()
 
-  const taskCount = tasks?.length || 0
+  // Counts by status
+  const inProgressCount = tasks?.filter(t => t.status === 'in_progress').length || 0
+  const doneCount = tasks?.filter(t => t.status === 'done').length || 0
+  const totalCount = tasks?.length || 0
 
   return (
     <div className="sidebar">
-      {/* ── Logo ── */}
+      {/* Logo */}
       <div className="sidebar-logo">
-        <span className="logo-icon">⚡</span>
+        <div className="logo-mark">F</div>
         <span className="logo-text">FlowBoard</span>
       </div>
 
-      {/* ── Navigation ── */}
+      {/* Navigation */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Workspace</div>
 
-        <div className="nav-item active" id="nav-dashboard">
-          <LayoutDashboard size={16} />
-          <span>My Board</span>
-          {taskCount > 0 && (
-            <span className="nav-item-badge">{taskCount}</span>
+        <button
+          className={`nav-item ${activeView === 'board' ? 'active' : ''}`}
+          onClick={() => onViewChange('board')}
+          id="nav-board"
+        >
+          <LayoutDashboard size={15} />
+          <span>Board</span>
+          {totalCount > 0 && (
+            <span className="nav-item-badge">{totalCount}</span>
           )}
-        </div>
+        </button>
 
-        <div className="nav-item" id="nav-all-tasks">
-          <Layers size={16} />
-          <span>All Tasks</span>
-        </div>
+        <button
+          className={`nav-item ${activeView === 'active' ? 'active' : ''}`}
+          onClick={() => onViewChange('active')}
+          id="nav-active"
+        >
+          <Inbox size={15} />
+          <span>Active</span>
+          {inProgressCount > 0 && (
+            <span className="nav-item-badge">{inProgressCount}</span>
+          )}
+        </button>
+
+        <button
+          className={`nav-item ${activeView === 'done' ? 'active' : ''}`}
+          onClick={() => onViewChange('done')}
+          id="nav-done"
+        >
+          <CheckCircle2 size={15} />
+          <span>Done</span>
+          {doneCount > 0 && (
+            <span className="nav-item-badge">{doneCount}</span>
+          )}
+        </button>
 
         <div className="sidebar-divider" />
 
-        <div className="nav-item" id="nav-settings">
-          <Settings size={16} />
+        <button
+          className={`nav-item ${activeView === 'settings' ? 'active' : ''}`}
+          onClick={() => onViewChange('settings')}
+          id="nav-settings"
+        >
+          <Settings size={15} />
           <span>Settings</span>
-        </div>
+        </button>
       </nav>
 
-      {/* ── Theme Toggle ── */}
+      {/* Theme */}
       <div className="theme-toggle-container">
         <button className="theme-toggle" onClick={toggleTheme} id="theme-toggle">
-          {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
-          <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+          {theme === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
+          <span>{theme === 'dark' ? 'Dark' : 'Light'}</span>
           <span className={`theme-toggle-switch ${theme === 'light' ? 'active' : ''}`} />
         </button>
       </div>
 
-      {/* ── User Footer ── */}
+      {/* User */}
       <div className="sidebar-footer">
         <div className="sidebar-user">
           <div className="user-avatar">{avatarLetter}</div>
@@ -84,7 +116,7 @@ const Sidebar = () => {
             title="Sign out"
             id="signout-btn"
           >
-            <LogOut size={16} />
+            <LogOut size={14} />
           </button>
         </div>
       </div>

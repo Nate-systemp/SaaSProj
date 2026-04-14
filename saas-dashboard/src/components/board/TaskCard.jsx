@@ -17,7 +17,6 @@ const TaskCard = ({ task, onClick, isOverlay = false }) => {
     transition,
   }
 
-  // Format due date
   const formatDueDate = (dateStr) => {
     if (!dateStr) return null
     const date = new Date(dateStr)
@@ -28,22 +27,21 @@ const TaskCard = ({ task, onClick, isOverlay = false }) => {
   }
 
   const dueInfo = formatDueDate(task.due_date)
-
-  // Short task ID for display
-  const shortId = task.id?.slice(0, 6)?.toUpperCase()
+  const shortId = task.id?.slice(0, 5)?.toUpperCase()
 
   return (
     <div
       ref={isOverlay ? undefined : setNodeRef}
       style={style}
       className={`task-card ${isDragging ? 'dragging' : ''}`}
+      data-priority={task.priority}
       onClick={onClick}
       {...(isOverlay ? {} : { ...attributes, ...listeners })}
     >
-      {/* Priority Indicator */}
-      <div className="task-card-priority">
-        <span className={`priority-dot ${task.priority}`} />
-        <span className={`priority-label ${task.priority}`}>
+      {/* Header row: ID + Priority badge */}
+      <div className="task-card-header">
+        <span className="task-card-id">FB-{shortId}</span>
+        <span className={`task-card-priority-badge ${task.priority}`}>
           {task.priority}
         </span>
       </div>
@@ -51,25 +49,25 @@ const TaskCard = ({ task, onClick, isOverlay = false }) => {
       {/* Title */}
       <div className="task-card-title">{task.title}</div>
 
-      {/* Description preview */}
+      {/* Description */}
       {task.description && (
         <div className="task-card-description">{task.description}</div>
       )}
 
-      {/* Footer: Tags + Due Date */}
-      <div className="task-card-footer">
-        <div className="task-card-tags">
-          {task.label && (
-            <span className="task-tag">{task.label}</span>
+      {/* Footer */}
+      {(task.label || dueInfo) && (
+        <div className="task-card-footer">
+          <div className="task-card-tags">
+            {task.label && <span className="task-tag">{task.label}</span>}
+          </div>
+          {dueInfo && (
+            <span className={`task-due ${dueInfo.isOverdue ? 'overdue' : ''}`}>
+              <Calendar size={10} />
+              {dueInfo.formatted}
+            </span>
           )}
         </div>
-        {dueInfo && (
-          <span className={`task-due ${dueInfo.isOverdue ? 'overdue' : ''}`}>
-            <Calendar size={11} />
-            {dueInfo.formatted}
-          </span>
-        )}
-      </div>
+      )}
     </div>
   )
 }

@@ -15,14 +15,14 @@ import TaskModal from './TaskModal'
 import '../../styles/board.css'
 
 const COLUMNS = [
-  { id: 'backlog', title: 'Backlog', emptyIcon: '📋', emptyText: 'No backlog items' },
-  { id: 'todo', title: 'Todo', emptyIcon: '📝', emptyText: 'Nothing to do yet' },
-  { id: 'in_progress', title: 'In Progress', emptyIcon: '⚡', emptyText: 'Nothing in progress' },
-  { id: 'done', title: 'Done', emptyIcon: '✅', emptyText: 'No completed tasks' },
+  { id: 'backlog', title: 'Backlog' },
+  { id: 'todo', title: 'Todo' },
+  { id: 'in_progress', title: 'In Progress' },
+  { id: 'done', title: 'Done' },
 ]
 
-const Board = ({ searchQuery, priorityFilter }) => {
-  const { tasks, moveTask, getTasksByStatus } = useTasks()
+const Board = ({ searchQuery, priorityFilter, activeView }) => {
+  const { tasks, moveTask } = useTasks()
   const [activeTask, setActiveTask] = useState(null)
   const [editingTask, setEditingTask] = useState(null)
   const [showModal, setShowModal] = useState(false)
@@ -30,13 +30,11 @@ const Board = ({ searchQuery, priorityFilter }) => {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5, // 5px movement before dragging starts
-      },
+      activationConstraint: { distance: 5 },
     })
   )
 
-  // Filter tasks
+  // Filter tasks globally
   const filteredTasks = useMemo(() => {
     let result = tasks
 
@@ -56,13 +54,25 @@ const Board = ({ searchQuery, priorityFilter }) => {
     return result
   }, [tasks, searchQuery, priorityFilter])
 
+  // Determine which columns to show based on view
+  const visibleColumns = useMemo(() => {
+    switch (activeView) {
+      case 'active':
+        return COLUMNS.filter(c => c.id === 'todo' || c.id === 'in_progress')
+      case 'done':
+        return COLUMNS.filter(c => c.id === 'done')
+      default:
+        return COLUMNS
+    }
+  }, [activeView])
+
   const getFilteredTasksByStatus = useCallback((status) => {
     return filteredTasks
       .filter(t => t.status === status)
       .sort((a, b) => a.position - b.position)
   }, [filteredTasks])
 
-  // ── Drag Handlers ──
+  // Drag handlers
   const handleDragStart = (event) => {
     const task = tasks.find(t => t.id === event.active.id)
     setActiveTask(task)
@@ -71,24 +81,17 @@ const Board = ({ searchQuery, priorityFilter }) => {
   const handleDragEnd = (event) => {
     const { active, over } = event
     setActiveTask(null)
-
     if (!over) return
 
     const activeId = active.id
     const overId = over.id
-
-    // Find the active task
     const activeTaskData = tasks.find(t => t.id === activeId)
     if (!activeTaskData) return
 
-    // Determine the target column
     let targetStatus
-
-    // Check if dropped directly on a column
     if (COLUMNS.some(col => col.id === overId)) {
       targetStatus = overId
     } else {
-      // Dropped on another task — find that task's column
       const overTask = tasks.find(t => t.id === overId)
       if (overTask) {
         targetStatus = overTask.status
@@ -97,32 +100,26 @@ const Board = ({ searchQuery, priorityFilter }) => {
       }
     }
 
-    // Calculate new position
-    const tasksInTargetColumn = tasks
+    const tasksInTarget = tasks
       .filter(t => t.status === targetStatus && t.id !== activeId)
       .sort((a, b) => a.position - b.position)
 
     let newPosition = 0
     if (over.id !== targetStatus) {
-      // Dropped on a task — find position relative to it
-      const overIndex = tasksInTargetColumn.findIndex(t => t.id === overId)
-      newPosition = overIndex >= 0 ? overIndex : tasksInTargetColumn.length
+      const overIndex = tasksInTarget.findIndex(t => t.id === overId)
+      newPosition = overIndex >= 0 ? overIndex : tasksInTarget.length
     } else {
-      // Dropped on the column itself — put at end
-      newPosition = tasksInTargetColumn.length
+      newPosition = tasksInTarget.length
     }
 
-    // Only update if something changed
     if (activeTaskData.status !== targetStatus || activeTaskData.position !== newPosition) {
       moveTask(activeId, targetStatus, newPosition)
     }
   }
 
-  const handleDragCancel = () => {
-    setActiveTask(null)
-  }
+  const handleDragCancel = () => setActiveTask(null)
 
-  // ── Modal Handlers ──
+  // Modal
   const handleNewTask = (status = 'backlog') => {
     setEditingTask(null)
     setModalDefaultStatus(status)
@@ -139,9 +136,25 @@ const Board = ({ searchQuery, priorityFilter }) => {
     setEditingTask(null)
   }
 
-  // Expose handleNewTask globally for Header
+  // Expose for keyboard shortcuts
   if (typeof window !== 'undefined') {
     window.__flowboardNewTask = handleNewTask
+  }
+
+  // Settings view
+  if (activeView === 'settings') {
+    return (
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-tertiary)',
+        fontSize: '13px',
+      }}>
+        Settings coming soon
+      </div>
+    )
   }
 
   return (
@@ -154,21 +167,16 @@ const Board = ({ searchQuery, priorityFilter }) => {
         onDragCancel={handleDragCancel}
       >
         <div className="board" id="kanban-board">
-          {COLUMNS.map((col) => {
-            const columnTasks = getFilteredTasksByStatus(col.id)
-            return (
-              <Column
-                key={col.id}
-                id={col.id}
-                title={col.title}
-                tasks={columnTasks}
-                emptyIcon={col.emptyIcon}
-                emptyText={col.emptyText}
-                onAddTask={() => handleNewTask(col.id)}
-                onEditTask={handleEditTask}
-              />
-            )
-          })}
+          {visibleColumns.map((col) => (
+            <Column
+              key={col.id}
+              id={col.id}
+              title={col.title}
+              tasks={getFilteredTasksByStatus(col.id)}
+              onAddTask={() => handleNewTask(col.id)}
+              onEditTask={handleEditTask}
+            />
+          ))}
         </div>
 
         <DragOverlay dropAnimation={null}>

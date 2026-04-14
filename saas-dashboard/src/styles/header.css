@@ -1,34 +1,27 @@
-/* ══════════════════════════════════════════
-   HEADER
-   ══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   HEADER — minimal, functional
+   ═══════════════════════════════════════ */
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 0 20px;
+  height: 52px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  gap: 16px;
-  transition: border-color var(--transition-smooth);
-  animation: headerFadeIn 0.3s ease 0.1s both;
+  gap: 12px;
 }
 
-@keyframes headerFadeIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Left Side ── */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .board-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -37,127 +30,118 @@
 
 .board-title-badge {
   font-size: 11px;
-  font-weight: 500;
-  font-family: 'Space Mono', monospace;
+  font-weight: 400;
   color: var(--text-tertiary);
-  background: var(--bg-tertiary);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
-/* ── Right Side ── */
+/* ── Actions ── */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 /* ── Search ── */
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 7px 12px;
-  color: var(--text-secondary);
-  transition: all var(--transition-fast);
-  min-width: 200px;
+  gap: 7px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  color: var(--text-tertiary);
+  transition: all var(--duration-fast) var(--ease-out);
+  width: 180px;
 }
 
 .search-bar:focus-within {
+  background: var(--bg-primary);
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--accent-subtle);
+  width: 240px;
 }
 
 .search-bar input {
   background: none;
-  border: none;
   color: var(--text-primary);
   width: 100%;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .search-bar input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-quaternary);
 }
 
 .search-shortcut {
   font-size: 10px;
   font-family: 'Space Mono', monospace;
-  color: var(--text-tertiary);
-  background: var(--bg-primary);
-  padding: 1px 5px;
+  color: var(--text-quaternary);
+  border: 1px solid var(--border);
+  padding: 0 4px;
   border-radius: 3px;
-  border: 1px solid var(--border);
-  white-space: nowrap;
+  line-height: 1.6;
+  flex-shrink: 0;
 }
 
-/* ── Filter Button ── */
-.filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 450;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-}
-
-.filter-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-}
-
-.filter-btn.active {
-  background: var(--accent-subtle);
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.filter-badge {
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--accent);
-  color: white;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
+/* ── Icon buttons (filter, etc.) ── */
+.header-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
 }
 
-/* ── New Task Button ── */
+.header-icon-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.header-icon-btn.active {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+.header-icon-btn .badge-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* ── New task ── */
 .new-task-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
+  gap: 5px;
+  padding: 5px 12px;
   background: var(--accent);
   color: white;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
   font-weight: 500;
-  transition: all var(--transition-fast);
+  letter-spacing: 0.01em;
+  transition: all var(--duration-fast) var(--ease-out);
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .new-task-btn:hover {
   background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 8px rgba(124, 106, 239, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .new-task-btn:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
 
 /* ── Filter Dropdown ── */
@@ -167,42 +151,42 @@
 
 .filter-dropdown {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 6px);
   right: 0;
-  background: var(--bg-secondary);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 6px;
-  min-width: 180px;
+  border-radius: var(--radius-md);
+  padding: 4px;
+  min-width: 170px;
   z-index: 100;
   box-shadow: var(--shadow-lg);
-  animation: dropdownFadeIn 0.15s ease;
+  animation: dropIn 0.12s var(--ease-out);
 }
 
-@keyframes dropdownFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .filter-dropdown-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--text-tertiary);
+  color: var(--text-quaternary);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 8px 10px 4px;
+  letter-spacing: 0.08em;
+  padding: 6px 8px 3px;
 }
 
 .filter-option {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--duration-fast) var(--ease-out);
   width: 100%;
   text-align: left;
 }
@@ -213,13 +197,13 @@
 }
 
 .filter-option.selected {
-  color: var(--accent);
+  color: var(--accent-text);
   background: var(--accent-subtle);
 }
 
 .filter-option-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -227,26 +211,59 @@
 .filter-option-check {
   margin-left: auto;
   opacity: 0;
-  transition: opacity var(--transition-fast);
 }
 
 .filter-option.selected .filter-option-check {
   opacity: 1;
 }
 
-/* ── Responsive ── */
+/* ── View tabs (board vs list) ── */
+.view-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--bg-tertiary);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.view-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-xs);
+  color: var(--text-tertiary);
+  font-size: 12px;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.view-tab:hover {
+  color: var(--text-secondary);
+}
+
+.view-tab.active {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
 @media (max-width: 768px) {
   .header {
-    padding: 12px 16px;
-    flex-wrap: wrap;
+    padding: 0 14px;
+    height: 46px;
   }
 
   .search-bar {
-    min-width: 0;
-    flex: 1;
+    width: 140px;
   }
 
-  .search-shortcut {
+  .search-bar:focus-within {
+    width: 180px;
+  }
+
+  .search-shortcut,
+  .view-tabs {
     display: none;
   }
 }

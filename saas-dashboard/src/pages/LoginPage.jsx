@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Mail, Lock, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import '../styles/auth.css'
 
 const LoginPage = () => {
@@ -29,32 +29,41 @@ const LoginPage = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-header">
-          <div className="auth-logo">
-            <span className="auth-logo-icon">⚡</span>
-            <span className="auth-logo-text">FlowBoard</span>
-          </div>
-          <h1 className="auth-title">Welcome back</h1>
-          <p className="auth-subtitle">Sign in to your account to continue</p>
+      {/* Left brand panel */}
+      <div className="auth-brand">
+        <div className="auth-brand-logo">
+          <div className="auth-brand-mark">F</div>
+          <span className="auth-brand-name">FlowBoard</span>
         </div>
+        <div className="auth-brand-tagline">
+          <h2>Organize.<br />Ship.<br />Repeat.</h2>
+          <p>A workspace for teams who ship fast and stay focused.</p>
+        </div>
+      </div>
 
-        <div className="auth-card">
+      {/* Right form area */}
+      <div className="auth-container">
+        <div className="auth-inner">
+          <div className="auth-header">
+            <h1 className="auth-title">Sign in</h1>
+            <p className="auth-subtitle">Welcome back. Enter your credentials to continue.</p>
+          </div>
+
           {error && (
-            <div className="auth-error" style={{ marginBottom: '16px' }}>
-              <AlertCircle size={14} />
+            <div className="auth-error">
+              <AlertCircle size={13} />
               <span>{error}</span>
             </div>
           )}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label" htmlFor="login-email">Email address</label>
+              <label className="form-label" htmlFor="login-email">Email</label>
               <input
                 id="login-email"
                 type="email"
                 className="form-input"
-                placeholder="you@example.com"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -78,15 +87,15 @@ const LoginPage = () => {
 
             <button type="submit" className="auth-btn auth-btn-primary" disabled={loading}>
               {loading && <span className="auth-spinner" />}
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in…' : 'Continue'}
             </button>
           </form>
-        </div>
 
-        <p className="auth-footer">
-          Don't have an account?{' '}
-          <Link to="/signup" className="auth-link">Create one</Link>
-        </p>
+          <p className="auth-footer">
+            No account?{' '}
+            <Link to="/signup" className="auth-link">Create one</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -9,16 +9,15 @@ import '../styles/dashboard.css'
 const DashboardContent = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [priorityFilter, setPriorityFilter] = useState(null)
+  const [activeView, setActiveView] = useState('board')
   const { tasks } = useTasks()
 
   const handleNewTask = useCallback(() => {
-    // The Board component exposes this via window
     if (window.__flowboardNewTask) {
       window.__flowboardNewTask('backlog')
     }
   }, [])
 
-  // Keyboard shortcuts
   useKeyboardShortcuts({
     onNewTask: handleNewTask,
     onSearchFocus: () => {
@@ -30,9 +29,21 @@ const DashboardContent = () => {
     },
   })
 
+  // Count for current view
+  const viewTaskCount = (() => {
+    switch (activeView) {
+      case 'active':
+        return tasks?.filter(t => t.status === 'todo' || t.status === 'in_progress').length || 0
+      case 'done':
+        return tasks?.filter(t => t.status === 'done').length || 0
+      default:
+        return tasks?.length || 0
+    }
+  })()
+
   return (
     <div className="dashboard">
-      <Sidebar />
+      <Sidebar activeView={activeView} onViewChange={setActiveView} />
       <div className="dashboard-main">
         <Header
           searchQuery={searchQuery}
@@ -40,11 +51,13 @@ const DashboardContent = () => {
           priorityFilter={priorityFilter}
           onPriorityFilterChange={setPriorityFilter}
           onNewTask={handleNewTask}
-          taskCount={tasks?.length || 0}
+          taskCount={viewTaskCount}
+          activeView={activeView}
         />
         <Board
           searchQuery={searchQuery}
           priorityFilter={priorityFilter}
+          activeView={activeView}
         />
       </div>
     </div>
