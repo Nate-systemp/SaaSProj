@@ -10,6 +10,13 @@ const PRIORITY_OPTIONS = [
   { value: 'low', label: 'Low', color: 'var(--priority-low)' },
 ]
 
+const COLUMN_LABELS = {
+  backlog: 'Backlog',
+  todo: 'Todo',
+  in_progress: 'In Progress',
+  done: 'Done',
+}
+
 const Header = ({
   searchQuery,
   onSearchChange,
@@ -18,6 +25,8 @@ const Header = ({
   onNewTask,
   taskCount,
   activeView,
+  columnFilter,
+  onColumnFilterClear,
 }) => {
   const [showFilter, setShowFilter] = useState(false)
   const filterRef = useRef(null)
@@ -38,7 +47,6 @@ const Header = ({
     return () => { delete window.__flowboardSearchRef }
   }, [])
 
-  // Dynamic title based on view
   const viewTitles = {
     board: 'Board',
     active: 'Active Tasks',
@@ -52,6 +60,17 @@ const Header = ({
         <h1 className="board-title">{viewTitles[activeView] || 'Board'}</h1>
         {taskCount > 0 && activeView !== 'settings' && (
           <span className="board-title-badge">{taskCount}</span>
+        )}
+        {/* Column filter indicator (1-4 shortcuts) */}
+        {columnFilter && (
+          <button
+            className="column-filter-indicator"
+            onClick={onColumnFilterClear}
+            title="Press 0 to clear"
+          >
+            <span>{COLUMN_LABELS[columnFilter]}</span>
+            <X size={10} />
+          </button>
         )}
       </div>
 

@@ -107,8 +107,32 @@
   cursor: grab;
   transition: border-color var(--duration-fast) var(--ease-out),
               box-shadow var(--duration-fast) var(--ease-out),
-              transform var(--duration-fast) var(--ease-out);
+              transform var(--duration-fast) var(--ease-out),
+              opacity var(--duration-base) var(--ease-out);
   position: relative;
+  animation: cardEnter 0.25s var(--ease-out) both;
+}
+
+/* Staggered entrance — each card fades in 30ms after the previous */
+.task-card:nth-child(1) { animation-delay: 0ms; }
+.task-card:nth-child(2) { animation-delay: 30ms; }
+.task-card:nth-child(3) { animation-delay: 60ms; }
+.task-card:nth-child(4) { animation-delay: 90ms; }
+.task-card:nth-child(5) { animation-delay: 120ms; }
+.task-card:nth-child(6) { animation-delay: 150ms; }
+.task-card:nth-child(7) { animation-delay: 180ms; }
+.task-card:nth-child(8) { animation-delay: 210ms; }
+.task-card:nth-child(n+9) { animation-delay: 240ms; }
+
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Priority expressed through LEFT BORDER color */
@@ -276,6 +300,64 @@
   font-size: 12px;
   color: var(--text-quaternary);
   text-align: center;
+}
+
+/* ── Skeleton Loading Cards ── */
+.skeleton-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: skeletonPulse 1.2s ease-in-out infinite both;
+}
+
+.skeleton-card:nth-child(2) { animation-delay: 150ms; }
+.skeleton-card:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton-line-sm {
+  height: 8px;
+  width: 40%;
+  border-radius: 3px;
+}
+
+.skeleton-line-lg {
+  height: 10px;
+  width: 85%;
+  border-radius: 3px;
+}
+
+.skeleton-line-md {
+  height: 8px;
+  width: 55%;
+  border-radius: 3px;
+}
+
+/* ── Column Filter Active State ── */
+.column-filter-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  padding: 2px 8px 2px 6px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.column-filter-indicator:hover {
+  background: var(--accent);
+  color: white;
 }
 
 /* ── Responsive ── */

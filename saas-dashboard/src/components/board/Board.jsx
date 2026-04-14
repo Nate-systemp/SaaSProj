@@ -21,7 +21,7 @@ const COLUMNS = [
   { id: 'done', title: 'Done' },
 ]
 
-const Board = ({ searchQuery, priorityFilter, activeView }) => {
+const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading }) => {
   const { tasks, moveTask } = useTasks()
   const [activeTask, setActiveTask] = useState(null)
   const [editingTask, setEditingTask] = useState(null)
@@ -54,8 +54,13 @@ const Board = ({ searchQuery, priorityFilter, activeView }) => {
     return result
   }, [tasks, searchQuery, priorityFilter])
 
-  // Determine which columns to show based on view
+  // Determine which columns to show based on view + column filter
   const visibleColumns = useMemo(() => {
+    // Column filter (1-4 shortcuts) takes priority
+    if (columnFilter) {
+      return COLUMNS.filter(c => c.id === columnFilter)
+    }
+
     switch (activeView) {
       case 'active':
         return COLUMNS.filter(c => c.id === 'todo' || c.id === 'in_progress')
@@ -64,7 +69,7 @@ const Board = ({ searchQuery, priorityFilter, activeView }) => {
       default:
         return COLUMNS
     }
-  }, [activeView])
+  }, [activeView, columnFilter])
 
   const getFilteredTasksByStatus = useCallback((status) => {
     return filteredTasks
@@ -153,6 +158,36 @@ const Board = ({ searchQuery, priorityFilter, activeView }) => {
         fontSize: '13px',
       }}>
         Settings coming soon
+      </div>
+    )
+  }
+
+  // Loading state — skeleton cards
+  if (loading) {
+    return (
+      <div className="board" id="kanban-board">
+        {COLUMNS.map((col) => (
+          <div className="column" key={col.id}>
+            <div className="column-header">
+              <span className={`column-status-dot ${col.id}`} />
+              <span className="column-title">{col.title}</span>
+              <span className="column-count">—</span>
+            </div>
+            <div className="column-tasks">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="skeleton-card"
+                  style={{ animationDelay: `${(i - 1) * 80}ms` }}
+                >
+                  <div className="skeleton skeleton-line-sm" />
+                  <div className="skeleton skeleton-line-lg" />
+                  <div className="skeleton skeleton-line-md" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     )
   }

@@ -4,18 +4,30 @@ import Header from '../components/layout/Header'
 import Board from '../components/board/Board'
 import { TaskProvider, useTasks } from '../contexts/TaskContext'
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
+import useDebounce from '../hooks/useDebounce'
 import '../styles/dashboard.css'
 
 const DashboardContent = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [priorityFilter, setPriorityFilter] = useState(null)
   const [activeView, setActiveView] = useState('board')
-  const { tasks } = useTasks()
+  const [columnFilter, setColumnFilter] = useState(null)
+  const { tasks, loading } = useTasks()
+
+  // Debounce search — 250ms delay
+  const debouncedSearch = useDebounce(searchQuery, 250)
 
   const handleNewTask = useCallback(() => {
     if (window.__flowboardNewTask) {
       window.__flowboardNewTask('backlog')
     }
+  }, [])
+
+  const handleColumnFilter = useCallback((column) => {
+    // Toggle: if already filtering this column, clear it
+    setColumnFilter(prev => prev === column ? null : column)
+    // Switch to board view to show the filtered column
+    setActiveView('board')
   }, [])
 
   useKeyboardShortcuts({
@@ -26,7 +38,9 @@ const DashboardContent = () => {
     onClearFilters: () => {
       setPriorityFilter(null)
       setSearchQuery('')
+      setColumnFilter(null)
     },
+    onColumnFilter: handleColumnFilter,
   })
 
   // Count for current view
@@ -53,11 +67,15 @@ const DashboardContent = () => {
           onNewTask={handleNewTask}
           taskCount={viewTaskCount}
           activeView={activeView}
+          columnFilter={columnFilter}
+          onColumnFilterClear={() => setColumnFilter(null)}
         />
         <Board
-          searchQuery={searchQuery}
+          searchQuery={debouncedSearch}
           priorityFilter={priorityFilter}
           activeView={activeView}
+          columnFilter={columnFilter}
+          loading={loading}
         />
       </div>
     </div>
