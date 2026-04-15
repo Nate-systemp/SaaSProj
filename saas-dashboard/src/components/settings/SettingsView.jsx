@@ -76,7 +76,7 @@ const SettingsView = () => {
                 readOnly
                 disabled
               />
-              <p className="settings-section-desc mt-2">Email changes are currently restricted.</p>
+              <p className="settings-section-desc" style={{ marginTop: '0.5rem' }}>Email changes are currently restricted.</p>
             </div>
 
             <div className="settings-save-footer">
@@ -87,7 +87,7 @@ const SettingsView = () => {
               >
                 {saving ? (
                   <>
-                    <Loader2 size={14} className="animate-spin mr-2 inline" />
+                    <Loader2 size={14} className="settings-spinner" />
                     Saving...
                   </>
                 ) : 'Save Updates'}
@@ -104,7 +104,7 @@ const SettingsView = () => {
         </div>
       </section>
 
-      {/* Workspace Section (Mock) */}
+      {/* Workspace Section */}
       <section className="settings-section">
         <div className="settings-section-header">
           <h2 className="settings-section-title">Workspace Configuration</h2>
@@ -114,12 +114,12 @@ const SettingsView = () => {
         <div className="settings-card">
           <div className="settings-form-group">
             <label className="settings-label">Current Plan</label>
-            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
-              <div>
-                <p className="font-medium text-foreground">Pro Individual</p>
-                <p className="text-xs text-muted-foreground">$0.00 / month (Beta Access)</p>
+            <div className="settings-plan-row">
+              <div className="settings-plan-info">
+                <span className="settings-plan-name">Pro Individual</span>
+                <span className="settings-plan-price">$0.00 / month (Beta Access)</span>
               </div>
-              <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] uppercase font-bold tracking-wider rounded">Active</span>
+              <span className="settings-plan-badge">Active</span>
             </div>
           </div>
 
