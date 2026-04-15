@@ -21,6 +21,7 @@ const LoginPage = () => {
     const { error } = await signIn(email, password)
 
     if (error) {
+      console.error('Login error detail:', error)
       setError(error.message)
       setLoading(false)
     } else {
