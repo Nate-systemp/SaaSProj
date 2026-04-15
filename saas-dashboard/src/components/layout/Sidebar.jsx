@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Inbox,
   CheckCircle2,
+  CalendarDays,
   Settings,
   LogOut,
   Sun,
@@ -45,6 +46,7 @@ const Sidebar = ({ activeView, onViewChange }) => {
   const inProgressCount = tasks?.filter(t => t.status === 'in_progress').length || 0
   const doneCount = tasks?.filter(t => t.status === 'done').length || 0
   const totalCount = tasks?.length || 0
+  const scheduledCount = tasks?.filter(t => t.due_date).length || 0
 
   return (
     <div className="sidebar">
@@ -94,6 +96,18 @@ const Sidebar = ({ activeView, onViewChange }) => {
           <span>Done</span>
           {doneCount > 0 && (
             <span className="nav-item-badge">{doneCount}</span>
+          )}
+        </button>
+
+        <button
+          className={`nav-item ${activeView === 'calendar' ? 'active' : ''}`}
+          onClick={() => onViewChange('calendar')}
+          id="nav-calendar"
+        >
+          <CalendarDays size={15} />
+          <span>Calendar</span>
+          {scheduledCount > 0 && (
+            <span className="nav-item-badge">{scheduledCount}</span>
           )}
         </button>
 

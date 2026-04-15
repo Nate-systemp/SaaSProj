@@ -11,7 +11,7 @@ const STATUSES = [
   { value: 'done', label: 'Done' },
 ]
 
-const TaskModal = ({ task, defaultStatus, onClose }) => {
+const TaskModal = ({ task, defaultStatus, defaultDueDate, onClose }) => {
   const { createTask, updateTask, deleteTask } = useTasks()
   const isEditing = !!task
 
@@ -20,7 +20,7 @@ const TaskModal = ({ task, defaultStatus, onClose }) => {
   const [status, setStatus] = useState(task?.status || defaultStatus || 'backlog')
   const [priority, setPriority] = useState(task?.priority || 'medium')
   const [label, setLabel] = useState(task?.label || '')
-  const [dueDate, setDueDate] = useState(task?.due_date || '')
+  const [dueDate, setDueDate] = useState(task?.due_date || defaultDueDate || '')
   const [saving, setSaving] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)

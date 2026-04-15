@@ -1,9 +1,12 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Sidebar from '../components/layout/Sidebar'
 import Header from '../components/layout/Header'
 import Board from '../components/board/Board'
+import CalendarView from '../components/board/CalendarView'
 import SettingsView from '../components/settings/SettingsView'
 import CommandPalette from '../components/ui/CommandPalette'
+import TaskModal from '../components/board/TaskModal'
+import TaskDetailPanel from '../components/board/TaskDetailPanel'
 import { TaskProvider, useTasks } from '../contexts/TaskContext'
 import { useTheme } from '../contexts/ThemeContext'
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
@@ -16,16 +19,35 @@ const DashboardContent = () => {
   const [activeView, setActiveView] = useState('board')
   const [columnFilter, setColumnFilter] = useState(null)
   const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+
+  // Calendar-level modal/panel state (shared across board + calendar views)
+  const [calendarModalOpen, setCalendarModalOpen] = useState(false)
+  const [calendarModalDefaultDate, setCalendarModalDefaultDate] = useState(null)
+  const [calendarSelectedTask, setCalendarSelectedTask] = useState(null)
+
   const { tasks, loading } = useTasks()
   const { theme, toggleTheme } = useTheme()
 
   // Debounce search — 250ms delay
   const debouncedSearch = useDebounce(searchQuery, 250)
 
-  const handleNewTask = useCallback(() => {
-    if (window.__flowboardNewTask) {
-      window.__flowboardNewTask('backlog')
+  const handleNewTask = useCallback((statusOrDate = 'backlog') => {
+    if (activeView === 'calendar') {
+      // statusOrDate is a date string like '2026-04-20'
+      setCalendarModalDefaultDate(statusOrDate)
+      setCalendarModalOpen(true)
+    } else if (window.__flowboardNewTask) {
+      window.__flowboardNewTask(statusOrDate)
     }
+  }, [activeView])
+
+  const handleCalendarEditTask = useCallback((task) => {
+    setCalendarSelectedTask(task)
+  }, [])
+
+  const handleCalendarNewTask = useCallback((dateStr) => {
+    setCalendarModalDefaultDate(dateStr)
+    setCalendarModalOpen(true)
   }, [])
 
   const handleColumnFilter = useCallback((column) => {
@@ -39,6 +61,7 @@ const DashboardContent = () => {
     switch (id) {
       case 'new-task': handleNewTask(); break;
       case 'view-board': setActiveView('board'); break;
+      case 'view-calendar': setActiveView('calendar'); break;
       case 'view-active': setActiveView('active'); break;
       case 'view-done': setActiveView('done'); break;
       case 'logout': window.__flowboardSignOut?.(); break;
@@ -89,6 +112,29 @@ const DashboardContent = () => {
         />
         {activeView === 'settings' ? (
           <SettingsView />
+        ) : activeView === 'calendar' ? (
+          <>
+            <CalendarView
+              onEditTask={handleCalendarEditTask}
+              onNewTask={handleCalendarNewTask}
+            />
+            {calendarModalOpen && (
+              <TaskModal
+                defaultStatus="backlog"
+                defaultDueDate={calendarModalDefaultDate}
+                onClose={() => {
+                  setCalendarModalOpen(false)
+                  setCalendarModalDefaultDate(null)
+                }}
+              />
+            )}
+            {calendarSelectedTask && (
+              <TaskDetailPanel
+                task={calendarSelectedTask}
+                onClose={() => setCalendarSelectedTask(null)}
+              />
+            )}
+          </>
         ) : (
           <Board
             searchQuery={debouncedSearch}
