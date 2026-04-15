@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { AlertCircle } from 'lucide-react'
 import '../styles/auth.css'
+import Logo from '../components/common/Logo'
 
 const SignUpPage = () => {
   const { signUp } = useAuth()
@@ -33,12 +34,11 @@ const SignUpPage = () => {
       {/* Left brand panel */}
       <div className="auth-brand">
         <div className="auth-brand-logo">
-          <div className="auth-brand-mark">F</div>
-          <span className="auth-brand-name">FlowBoard</span>
+          <Logo size={32} textColor="#fff" />
         </div>
         <div className="auth-brand-tagline">
           <h2>Start shipping<br />from day one.</h2>
-          <p>Join teams who use FlowBoard to stay on top of everything.</p>
+          <p>Join teams who use Vantage to stay on top of everything.</p>
         </div>
       </div>
 

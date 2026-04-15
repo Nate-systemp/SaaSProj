@@ -13,6 +13,7 @@ import {
   Moon,
 } from 'lucide-react'
 import '../../styles/sidebar.css'
+import Logo from '../common/Logo'
 
 const Sidebar = ({ activeView, onViewChange }) => {
   const { user, profile, signOut } = useAuth()
@@ -32,7 +33,7 @@ const Sidebar = ({ activeView, onViewChange }) => {
 
   // Expose for Command Palette
   if (typeof window !== 'undefined') {
-    window.__flowboardSignOut = handleSignOutClick
+    window.__vantageSignOut = handleSignOutClick
   }
 
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'User'
@@ -47,8 +48,7 @@ const Sidebar = ({ activeView, onViewChange }) => {
     <div className="sidebar">
       {/* ... (Logo and Nav sections) */}
       <div className="sidebar-logo">
-        <div className="logo-mark">F</div>
-        <span className="logo-text">FlowBoard</span>
+        <Logo size={22} />
       </div>
 
       <nav className="sidebar-nav">
