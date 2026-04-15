@@ -12,6 +12,8 @@ import {
   Sun,
   Moon,
 } from 'lucide-react'
+import BoardSwitcher from '../board/BoardSwitcher'
+import ActivityLog from '../ui/ActivityLog'
 import '../../styles/sidebar.css'
 import Logo from '../common/Logo'
 
@@ -49,6 +51,11 @@ const Sidebar = ({ activeView, onViewChange }) => {
       {/* ... (Logo and Nav sections) */}
       <div className="sidebar-logo">
         <Logo size={22} />
+      </div>
+
+      {/* Board Switcher */}
+      <div className="sidebar-board-switcher">
+        <BoardSwitcher />
       </div>
 
       <nav className="sidebar-nav">
@@ -101,6 +108,9 @@ const Sidebar = ({ activeView, onViewChange }) => {
           <span>Settings</span>
         </button>
       </nav>
+
+      {/* Activity Log */}
+      <ActivityLog />
 
       <div className="theme-toggle-container">
         <button className="theme-toggle" onClick={toggleTheme} id="theme-toggle">

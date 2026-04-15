@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Search, SlidersHorizontal, Plus, X, Check } from 'lucide-react'
+import { useTasks } from '../../contexts/TaskContext'
 import '../../styles/header.css'
 
 const PRIORITY_OPTIONS = [
@@ -31,6 +32,7 @@ const Header = ({
   const [showFilter, setShowFilter] = useState(false)
   const filterRef = useRef(null)
   const searchRef = useRef(null)
+  const { board } = useTasks()
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -48,7 +50,7 @@ const Header = ({
   }, [])
 
   const viewTitles = {
-    board: 'Board',
+    board: board?.name || 'Board',
     active: 'Active Tasks',
     done: 'Completed',
     settings: 'Settings',

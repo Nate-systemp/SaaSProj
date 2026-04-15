@@ -30,6 +30,8 @@ const taskReducer = (state, action) => {
       }
     case 'SET_BOARD':
       return { ...state, board: action.payload }
+    case 'SET_BOARDS':
+      return { ...state, boards: action.payload }
     default:
       return state
   }
@@ -38,31 +40,56 @@ const taskReducer = (state, action) => {
 const initialState = {
   tasks: [],
   board: null,
+  boards: [],
   loading: true,
+}
+
+// ── Activity Logger helper ──
+const logActivity = async ({ boardId, userId, action, taskTitle, fromStatus, toStatus }) => {
+  try {
+    await supabase.from('activity_log').insert({
+      board_id: boardId,
+      user_id: userId,
+      action,
+      task_title: taskTitle,
+      from_status: fromStatus || null,
+      to_status: toStatus || null,
+    })
+  } catch (err) {
+    // Silently fail — activity log is non-critical
+    console.warn('Activity log error:', err)
+  }
 }
 
 export const TaskProvider = ({ children }) => {
   const [state, dispatch] = useReducer(taskReducer, initialState)
   const { user } = useAuth()
 
-  // ── Fetch or Create Board ──
-  const initializeBoard = useCallback(async () => {
-    if (!user) return
+  // ── Fetch All Boards ──
+  const fetchBoards = useCallback(async () => {
+    if (!user) return []
 
-    // Try to find existing board
-    const { data: boards, error: fetchErr } = await supabase
+    const { data, error } = await supabase
       .from('boards')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: true })
-      .limit(1)
 
-    if (fetchErr) {
-      console.error('Error fetching boards:', fetchErr)
-      return
+    if (error) {
+      console.error('Error fetching boards:', error)
+      return []
     }
 
-    let board = boards?.[0]
+    dispatch({ type: 'SET_BOARDS', payload: data || [] })
+    return data || []
+  }, [user])
+
+  // ── Fetch or Create Board ──
+  const initializeBoard = useCallback(async () => {
+    if (!user) return
+
+    const boards = await fetchBoards()
+    let board = boards[0]
 
     // Create default board if none exists
     if (!board) {
@@ -78,6 +105,7 @@ export const TaskProvider = ({ children }) => {
       }
 
       board = newBoard
+      dispatch({ type: 'SET_BOARDS', payload: [board] })
 
       // Create onboarding sample tasks
       const sampleTasks = [
@@ -118,7 +146,7 @@ export const TaskProvider = ({ children }) => {
 
     dispatch({ type: 'SET_BOARD', payload: board })
     return board
-  }, [user])
+  }, [user, fetchBoards])
 
   // ── Fetch Tasks ──
   const fetchTasks = useCallback(async (boardId) => {
@@ -188,6 +216,91 @@ export const TaskProvider = ({ children }) => {
     }
   }, [state.board])
 
+  // ── Board Management ──
+  const switchBoard = useCallback(async (boardId) => {
+    const targetBoard = state.boards.find(b => b.id === boardId)
+    if (!targetBoard) return
+
+    dispatch({ type: 'SET_BOARD', payload: targetBoard })
+    await fetchTasks(targetBoard.id)
+    toast.success(`Switched to "${targetBoard.name}"`)
+  }, [state.boards, fetchTasks])
+
+  const createBoard = useCallback(async (name) => {
+    if (!user) return
+
+    const { data, error } = await supabase
+      .from('boards')
+      .insert({ user_id: user.id, name })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error creating board:', error)
+      toast.error('Failed to create board')
+      return
+    }
+
+    dispatch({ type: 'SET_BOARDS', payload: [...state.boards, data] })
+    dispatch({ type: 'SET_BOARD', payload: data })
+    dispatch({ type: 'SET_TASKS', payload: [] })
+    dispatch({ type: 'SET_LOADING', payload: false })
+    toast.success(`Board "${name}" created`)
+  }, [user, state.boards])
+
+  const renameBoard = useCallback(async (boardId, newName) => {
+    const { error } = await supabase
+      .from('boards')
+      .update({ name: newName, updated_at: new Date().toISOString() })
+      .eq('id', boardId)
+
+    if (error) {
+      console.error('Error renaming board:', error)
+      toast.error('Failed to rename board')
+      return
+    }
+
+    dispatch({
+      type: 'SET_BOARDS',
+      payload: state.boards.map(b => b.id === boardId ? { ...b, name: newName } : b)
+    })
+
+    if (state.board?.id === boardId) {
+      dispatch({ type: 'SET_BOARD', payload: { ...state.board, name: newName } })
+    }
+
+    toast.success('Board renamed')
+  }, [state.boards, state.board])
+
+  const deleteBoard = useCallback(async (boardId) => {
+    if (state.boards.length <= 1) {
+      toast.error('Cannot delete the only board')
+      return
+    }
+
+    const { error } = await supabase
+      .from('boards')
+      .delete()
+      .eq('id', boardId)
+
+    if (error) {
+      console.error('Error deleting board:', error)
+      toast.error('Failed to delete board')
+      return
+    }
+
+    const remaining = state.boards.filter(b => b.id !== boardId)
+    dispatch({ type: 'SET_BOARDS', payload: remaining })
+
+    // If we deleted the active board, switch to the first remaining one
+    if (state.board?.id === boardId && remaining.length > 0) {
+      dispatch({ type: 'SET_BOARD', payload: remaining[0] })
+      await fetchTasks(remaining[0].id)
+    }
+
+    toast.success('Board deleted')
+  }, [state.boards, state.board, fetchTasks])
+
   // ── CRUD Operations ──
   const createTask = useCallback(async ({ title, description, status = 'backlog', priority = 'medium', label, due_date }) => {
     if (!state.board || !user) return
@@ -218,11 +331,22 @@ export const TaskProvider = ({ children }) => {
       return null
     }
 
+    // Log activity
+    logActivity({
+      boardId: state.board.id,
+      userId: user.id,
+      action: 'created',
+      taskTitle: title,
+      toStatus: status,
+    })
+
     toast.success('Task created')
     return data
   }, [state.board, state.tasks, user])
 
   const updateTask = useCallback(async (taskId, updates) => {
+    const oldTask = state.tasks.find(t => t.id === taskId)
+
     const { error } = await supabase
       .from('tasks')
       .update({ ...updates, updated_at: new Date().toISOString() })
@@ -234,11 +358,32 @@ export const TaskProvider = ({ children }) => {
       return false
     }
 
+    // Log activity for status changes
+    if (oldTask && updates.status && updates.status !== oldTask.status) {
+      logActivity({
+        boardId: state.board?.id,
+        userId: user?.id,
+        action: 'moved',
+        taskTitle: updates.title || oldTask.title,
+        fromStatus: oldTask.status,
+        toStatus: updates.status,
+      })
+    } else if (oldTask && user) {
+      logActivity({
+        boardId: state.board?.id,
+        userId: user.id,
+        action: 'updated',
+        taskTitle: updates.title || oldTask.title,
+      })
+    }
+
     toast.success('Task updated')
     return true
-  }, [])
+  }, [state.tasks, state.board, user])
 
   const moveTask = useCallback(async (taskId, newStatus, newPosition) => {
+    const oldTask = state.tasks.find(t => t.id === taskId)
+
     // Optimistic update
     dispatch({
       type: 'UPDATE_TASK',
@@ -259,8 +404,21 @@ export const TaskProvider = ({ children }) => {
       toast.error('Failed to move task')
       // Refetch to revert
       fetchTasks(state.board.id)
+      return
     }
-  }, [state.board?.id, fetchTasks])
+
+    // Log move activity
+    if (oldTask && oldTask.status !== newStatus && user) {
+      logActivity({
+        boardId: state.board?.id,
+        userId: user.id,
+        action: 'moved',
+        taskTitle: oldTask.title,
+        fromStatus: oldTask.status,
+        toStatus: newStatus,
+      })
+    }
+  }, [state.board?.id, state.tasks, fetchTasks, user])
 
   const deleteTask = useCallback(async (taskId) => {
     // Find the task before deleting (for undo)
@@ -282,6 +440,16 @@ export const TaskProvider = ({ children }) => {
         dispatch({ type: 'ADD_TASK', payload: taskToDelete })
       }
       return
+    }
+
+    // Log delete activity
+    if (taskToDelete && user) {
+      logActivity({
+        boardId: state.board?.id,
+        userId: user.id,
+        action: 'deleted',
+        taskTitle: taskToDelete.title,
+      })
     }
 
     toast.success(
@@ -311,7 +479,7 @@ export const TaskProvider = ({ children }) => {
       ),
       { duration: 5000 }
     )
-  }, [state.tasks])
+  }, [state.tasks, state.board, user])
 
   // ── Helpers ──
   const getTasksByStatus = useCallback((status) => {
@@ -323,6 +491,7 @@ export const TaskProvider = ({ children }) => {
   const value = useMemo(() => ({
     tasks: state.tasks,
     board: state.board,
+    boards: state.boards,
     loading: state.loading,
     createTask,
     updateTask,
@@ -330,7 +499,11 @@ export const TaskProvider = ({ children }) => {
     deleteTask,
     getTasksByStatus,
     fetchTasks,
-  }), [state.tasks, state.board, state.loading, createTask, updateTask, moveTask, deleteTask, getTasksByStatus, fetchTasks])
+    switchBoard,
+    createBoard,
+    renameBoard,
+    deleteBoard,
+  }), [state.tasks, state.board, state.boards, state.loading, createTask, updateTask, moveTask, deleteTask, getTasksByStatus, fetchTasks, switchBoard, createBoard, renameBoard, deleteBoard])
 
   return (
     <TaskContext.Provider value={value}>

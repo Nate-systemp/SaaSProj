@@ -1,0 +1,85 @@
+/* ═══════════════════════════════════════
+   EMPTY STATE — elegant, not cheesy
+   ═══════════════════════════════════════ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  flex: 1;
+  animation: emptyStateIn 0.4s var(--ease-out) both;
+}
+
+@keyframes emptyStateIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-state-icon-wrapper {
+  margin-bottom: 14px;
+  animation: emptyFloat 3s ease-in-out infinite;
+}
+
+@keyframes emptyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.empty-state-icon-ring {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--text-quaternary);
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+.empty-state:hover .empty-state-icon-ring {
+  border-color: var(--border-hover);
+  color: var(--text-tertiary);
+  transform: scale(1.05);
+}
+
+.empty-state-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.empty-state-subtitle {
+  font-size: 11px;
+  color: var(--text-quaternary);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 180px;
+}
+
+.empty-state-action {
+  margin-top: 14px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.empty-state-action:hover {
+  background: var(--accent);
+  color: white;
+}

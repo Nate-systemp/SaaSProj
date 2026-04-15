@@ -141,3 +141,11 @@
   padding: 0 3px;
   border-radius: 2px;
 }
+
+/* ── Empty state ── */
+.palette-empty {
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}

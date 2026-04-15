@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import {
   Search,
   Plus,
@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   LogOut,
   Command,
+  Layers,
 } from 'lucide-react'
+import { useTasks } from '../../contexts/TaskContext'
 import '../../styles/palette.css'
 
 const CommandPalette = ({
@@ -22,15 +24,34 @@ const CommandPalette = ({
   const [search, setSearch] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef(null)
+  const { boards, board, switchBoard } = useTasks()
 
-  const items = [
-    { id: 'new-task', label: 'Create new task', icon: <Plus size={15} />, shortcut: 'C' },
-    { id: 'toggle-theme', label: `Toggle ${theme === 'dark' ? 'light' : 'dark'} mode`, icon: theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />, shortcut: 'T' },
-    { id: 'view-board', label: 'Go to Board', icon: <LayoutDashboard size={15} />, shortcut: 'G B' },
-    { id: 'view-active', label: 'Go to Active', icon: <Inbox size={15} />, shortcut: 'G A' },
-    { id: 'view-done', label: 'Go to Done', icon: <CheckCircle2 size={15} />, shortcut: 'G D' },
-    { id: 'logout', label: 'Sign out', icon: <LogOut size={15} />, shortcut: '⇧ L' },
-  ].filter(item => item.label.toLowerCase().includes(search.toLowerCase()))
+  const items = useMemo(() => {
+    const baseItems = [
+      { id: 'new-task', label: 'Create new task', icon: <Plus size={15} />, shortcut: 'C' },
+      { id: 'toggle-theme', label: `Toggle ${theme === 'dark' ? 'light' : 'dark'} mode`, icon: theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />, shortcut: 'T' },
+      { id: 'view-board', label: 'Go to Board', icon: <LayoutDashboard size={15} />, shortcut: 'G B' },
+      { id: 'view-active', label: 'Go to Active', icon: <Inbox size={15} />, shortcut: 'G A' },
+      { id: 'view-done', label: 'Go to Done', icon: <CheckCircle2 size={15} />, shortcut: 'G D' },
+      { id: 'logout', label: 'Sign out', icon: <LogOut size={15} />, shortcut: '⇧ L' },
+    ]
+
+    // Add board-switching commands
+    const boardItems = boards
+      .filter(b => b.id !== board?.id)
+      .map(b => ({
+        id: `switch-board-${b.id}`,
+        label: `Switch to "${b.name}"`,
+        icon: <Layers size={15} />,
+        boardId: b.id,
+      }))
+
+    return [...baseItems, ...boardItems]
+  }, [theme, boards, board])
+
+  const filteredItems = useMemo(() => {
+    return items.filter(item => item.label.toLowerCase().includes(search.toLowerCase()))
+  }, [items, search])
 
   useEffect(() => {
     if (isOpen) {
@@ -46,15 +67,15 @@ const CommandPalette = ({
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setSelectedIndex(prev => (prev + 1) % items.length)
+        setSelectedIndex(prev => (prev + 1) % filteredItems.length)
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setSelectedIndex(prev => (prev - 1 + items.length) % items.length)
+        setSelectedIndex(prev => (prev - 1 + filteredItems.length) % filteredItems.length)
       } else if (e.key === 'Enter') {
         e.preventDefault()
-        const selectedItem = items[selectedIndex]
+        const selectedItem = filteredItems[selectedIndex]
         if (selectedItem) {
-          handleSelect(selectedItem.id)
+          handleSelect(selectedItem)
         }
       } else if (e.key === 'Escape') {
         onClose()
@@ -63,13 +84,15 @@ const CommandPalette = ({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, items, selectedIndex, onClose])
+  }, [isOpen, filteredItems, selectedIndex, onClose])
 
-  const handleSelect = (id) => {
-    if (id === 'toggle-theme') {
+  const handleSelect = (item) => {
+    if (item.id === 'toggle-theme') {
       onToggleTheme()
+    } else if (item.id.startsWith('switch-board-')) {
+      switchBoard(item.boardId)
     } else {
-      onAction(id)
+      onAction(item.id)
     }
     onClose()
   }
@@ -92,19 +115,19 @@ const CommandPalette = ({
         </div>
 
         <div className="palette-list">
-          {items.map((item, index) => (
+          {filteredItems.map((item, index) => (
             <button
               key={item.id}
               className={`palette-item ${index === selectedIndex ? 'selected' : ''}`}
-              onClick={() => handleSelect(item.id)}
+              onClick={() => handleSelect(item)}
             >
               <div className="palette-item-icon">{item.icon}</div>
               <span className="palette-item-label">{item.label}</span>
               {item.shortcut && <span className="palette-item-shortcut">{item.shortcut}</span>}
             </button>
           ))}
-          {items.length === 0 && (
-            <div className="p-4 text-center text-tertiary text-sm">
+          {filteredItems.length === 0 && (
+            <div className="palette-empty">
               No commands found
             </div>
           )}

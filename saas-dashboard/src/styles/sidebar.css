@@ -43,6 +43,11 @@
   color: var(--text-primary);
 }
 
+/* ── Board Switcher slot ── */
+.sidebar-board-switcher {
+  padding: 8px 10px 4px;
+}
+
 /* ── Nav ── */
 .sidebar-nav {
   flex: 1;

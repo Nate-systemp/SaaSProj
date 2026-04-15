@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════
+   ACTIVITY LOG — subtle timeline feed
+   ═══════════════════════════════════════ */
+
+.activity-log {
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+.activity-log-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.activity-log-header:hover {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.activity-log-count {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--text-quaternary);
+  margin-left: auto;
+  margin-right: 4px;
+}
+
+.activity-log-list {
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.activity-log-list.expanded {
+  max-height: 360px;
+}
+
+/* ── Item ── */
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  animation: activityFadeIn 0.2s var(--ease-out) both;
+}
+
+@keyframes activityFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activity-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.activity-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-xs);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.activity-icon.created {
+  color: var(--success);
+  background: var(--success-subtle);
+}
+
+.activity-icon.moved {
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+}
+
+.activity-icon.updated {
+  color: var(--warning);
+  background: var(--warning-subtle);
+}
+
+.activity-icon.deleted {
+  color: var(--danger);
+  background: var(--danger-subtle);
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-description {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.activity-description strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.activity-move {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 3px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+}
+
+.activity-time {
+  font-size: 10px;
+  color: var(--text-quaternary);
+  margin-top: 1px;
+}

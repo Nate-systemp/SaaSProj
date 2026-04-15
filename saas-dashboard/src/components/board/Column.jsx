@@ -2,6 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react'
 import TaskCard from './TaskCard'
+import EmptyState from '../ui/EmptyState'
 
 const Column = ({ id, title, tasks, onAddTask, onEditTask }) => {
   const { setNodeRef, isOver } = useDroppable({ id })
@@ -39,10 +40,7 @@ const Column = ({ id, title, tasks, onAddTask, onEditTask }) => {
               />
             ))
           ) : (
-            <div className="column-empty">
-              <div className="column-empty-line" />
-              <span className="column-empty-text">No tasks</span>
-            </div>
+            <EmptyState status={id} onAddTask={onAddTask} />
           )}
         </div>
       </SortableContext>
