@@ -163,6 +163,11 @@
   gap: 8px;
   font-size: 11px;
   color: var(--text-tertiary);
+  transition: color var(--duration-fast);
+}
+
+.panel-status.unsaved {
+  color: var(--warning, #f59e0b);
 }
 
 .panel-save-btn {

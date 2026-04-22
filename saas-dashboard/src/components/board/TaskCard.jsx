@@ -40,7 +40,7 @@ const TaskCard = ({ task, onClick, isOverlay = false }) => {
     >
       {/* Header row: ID + Priority badge */}
       <div className="task-card-header">
-        <span className="task-card-id">FB-{shortId}</span>
+        <span className="task-card-id">VN-{shortId}</span>
         <span className={`task-card-priority-badge ${task.priority}`}>
           {task.priority}
         </span>

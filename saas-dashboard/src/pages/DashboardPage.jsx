@@ -36,8 +36,8 @@ const DashboardContent = () => {
       // statusOrDate is a date string like '2026-04-20'
       setCalendarModalDefaultDate(statusOrDate)
       setCalendarModalOpen(true)
-    } else if (window.__flowboardNewTask) {
-      window.__flowboardNewTask(statusOrDate)
+    } else if (window.__vantageNewTask) {
+      window.__vantageNewTask(statusOrDate)
     }
   }, [activeView])
 
@@ -64,7 +64,7 @@ const DashboardContent = () => {
       case 'view-calendar': setActiveView('calendar'); break;
       case 'view-active': setActiveView('active'); break;
       case 'view-done': setActiveView('done'); break;
-      case 'logout': window.__flowboardSignOut?.(); break;
+      case 'logout': window.__vantageSignOut?.(); break;
       default: break;
     }
   }
@@ -72,7 +72,7 @@ const DashboardContent = () => {
   useKeyboardShortcuts({
     onNewTask: handleNewTask,
     onSearchFocus: () => {
-      window.__flowboardSearchRef?.current?.focus()
+      window.__vantageSearchRef?.current?.focus()
     },
     onClearFilters: () => {
       setPriorityFilter(null)

@@ -45,8 +45,8 @@ const Header = ({
   }, [])
 
   useEffect(() => {
-    window.__flowboardSearchRef = searchRef
-    return () => { delete window.__flowboardSearchRef }
+    window.__vantageSearchRef = searchRef
+    return () => { delete window.__vantageSearchRef }
   }, [])
 
   const viewTitles = {

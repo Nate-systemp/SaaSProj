@@ -112,7 +112,7 @@ export const TaskProvider = ({ children }) => {
         {
           board_id: board.id,
           user_id: user.id,
-          title: 'Welcome to FlowBoard! 👋',
+          title: 'Welcome to Vantage! 👋',
           description: 'This is a sample task. Click on it to edit, or drag it to another column.',
           status: 'todo',
           priority: 'medium',

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import '../../styles/settings.css'
@@ -8,6 +8,13 @@ const SettingsView = () => {
   const [fullName, setFullName] = useState(profile?.full_name || '')
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState(null) // { type: 'success' | 'error', message: string }
+
+  // Sync fullName when profile loads asynchronously
+  useEffect(() => {
+    if (profile?.full_name !== undefined) {
+      setFullName(profile.full_name || '')
+    }
+  }, [profile?.full_name])
 
   const handleSaveProfile = async (e) => {
     e.preventDefault()
@@ -83,7 +90,7 @@ const SettingsView = () => {
               <button 
                 type="submit" 
                 className="settings-btn settings-btn-primary"
-                disabled={saving || fullName.trim() === profile?.full_name}
+                disabled={saving || fullName.trim() === (profile?.full_name || '')}
               >
                 {saving ? (
                   <>
@@ -108,7 +115,7 @@ const SettingsView = () => {
       <section className="settings-section">
         <div className="settings-section-header">
           <h2 className="settings-section-title">Workspace Configuration</h2>
-          <p className="settings-section-desc">Customize how FlowBoard looks and behaves.</p>
+          <p className="settings-section-desc">Customize how Vantage looks and behaves.</p>
         </div>
 
         <div className="settings-card">

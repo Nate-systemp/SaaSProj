@@ -139,7 +139,7 @@ const Board = ({ searchQuery, priorityFilter, activeView, columnFilter, loading 
 
   // Expose for keyboard shortcuts
   if (typeof window !== 'undefined') {
-    window.__flowboardNewTask = handleNewTask
+    window.__vantageNewTask = handleNewTask
   }
 
   // Loading state

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { X, Trash2, Calendar, Tag, Layers, CheckCircle } from 'lucide-react'
 import { useTasks } from '../../contexts/TaskContext'
 import '../../styles/panel.css'
@@ -12,7 +12,7 @@ const STATUSES = [
 ]
 
 const TaskDetailPanel = ({ task, onClose }) => {
-  const { updateTask, deleteTask } = useTasks()
+  const { updateTask, deleteTask, tasks } = useTasks()
   const [title, setTitle] = useState(task?.title || '')
   const [description, setDescription] = useState(task?.description || '')
   const [status, setStatus] = useState(task?.status || 'backlog')
@@ -20,47 +20,101 @@ const TaskDetailPanel = ({ task, onClose }) => {
   const [label, setLabel] = useState(task?.label || '')
   const [dueDate, setDueDate] = useState(task?.due_date || '')
   const [saving, setSaving] = useState(false)
+  const [dirty, setDirty] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  // Update local state when task changes (switching between cards)
+  // Live task from context — stays in sync after saves/realtime
+  const liveTask = tasks.find(t => t.id === task?.id) || task
+
+  // Sync local state when live task updates (only if not actively editing)
   useEffect(() => {
-    if (task) {
-      setTitle(task.title || '')
-      setDescription(task.description || '')
-      setStatus(task.status || 'backlog')
-      setPriority(task.priority || 'medium')
-      setLabel(task.label || '')
-      setDueDate(task.due_date || '')
+    if (liveTask && !dirty) {
+      setTitle(liveTask.title || '')
+      setDescription(liveTask.description || '')
+      setStatus(liveTask.status || 'backlog')
+      setPriority(liveTask.priority || 'medium')
+      setLabel(liveTask.label || '')
+      setDueDate(liveTask.due_date || '')
     }
-  }, [task])
+  }, [liveTask?.id, liveTask?.updated_at])
 
-  const handleSave = async () => {
-    if (!title.trim() || !task) return
+  // Reset dirty flag when switching tasks
+  useEffect(() => {
+    setDirty(false)
+  }, [task?.id])
+
+  const hasChanges = useCallback(() => {
+    if (!liveTask) return false
+    return (
+      title.trim() !== (liveTask.title || '') ||
+      description !== (liveTask.description || '') ||
+      status !== (liveTask.status || 'backlog') ||
+      priority !== (liveTask.priority || 'medium') ||
+      (label.trim() || '') !== (liveTask.label || '') ||
+      (dueDate || '') !== (liveTask.due_date || '')
+    )
+  }, [title, description, status, priority, label, dueDate, liveTask])
+
+  const doSave = useCallback(async (overrides = {}) => {
+    const t = overrides.title ?? title
+    const d = overrides.description ?? description
+    const s = overrides.status ?? status
+    const p = overrides.priority ?? priority
+    const l = overrides.label ?? label
+    const dd = overrides.dueDate ?? dueDate
+    if (!t.trim() || !liveTask) return
     setSaving(true)
-    await updateTask(task.id, {
-      title: title.trim(),
-      description,
-      status,
-      priority,
-      label: label.trim() || null,
-      due_date: dueDate || null,
+    await updateTask(liveTask.id, {
+      title: t.trim(), description: d, status: s,
+      priority: p, label: l.trim() || null, due_date: dd || null,
     })
+    setDirty(false)
     setSaving(false)
-  }
+  }, [title, description, status, priority, label, dueDate, liveTask, updateTask])
 
-  // Auto-save on blur logic can be added here for even more premium feel
-  const handleBlur = () => {
-    handleSave()
-  }
+  const handleSave = useCallback(async () => {
+    if (!hasChanges()) { setDirty(false); return }
+    await doSave()
+  }, [hasChanges, doSave])
+
+  // Only auto-save on blur if dirty
+  const handleBlur = useCallback(() => {
+    if (dirty) handleSave()
+  }, [dirty, handleSave])
+
+  const markDirty = useCallback((setter) => (e) => {
+    setter(e.target.value)
+    setDirty(true)
+  }, [])
+
+  // Selects & date: save immediately on change
+  const handleStatusChange = useCallback((e) => {
+    const v = e.target.value
+    setStatus(v); setDirty(true)
+    doSave({ status: v })
+  }, [doSave])
+
+  const handlePriorityChange = useCallback((e) => {
+    const v = e.target.value
+    setPriority(v); setDirty(true)
+    doSave({ priority: v })
+  }, [doSave])
+
+  const handleDateChange = useCallback((e) => {
+    const v = e.target.value
+    setDueDate(v); setDirty(true)
+    doSave({ dueDate: v })
+  }, [doSave])
 
   const handleDelete = async () => {
-    await deleteTask(task.id)
+    await deleteTask(liveTask.id)
     onClose()
   }
 
   if (!task) return null
 
-  const shortId = task.id?.slice(0, 5)?.toUpperCase()
+  const shortId = liveTask.id?.slice(0, 5)?.toUpperCase()
+  const statusText = saving ? 'Saving...' : dirty ? 'Unsaved changes' : 'All changes saved'
 
   return (
     <>
@@ -68,13 +122,9 @@ const TaskDetailPanel = ({ task, onClose }) => {
       <div className="panel-container">
         {/* Header */}
         <div className="panel-header">
-          <span className="panel-title">Task FB-{shortId}</span>
+          <span className="panel-title">Task VN-{shortId}</span>
           <div className="panel-actions">
-            <button
-              className="panel-action-btn danger"
-              onClick={() => setShowDeleteConfirm(true)}
-              title="Delete task"
-            >
+            <button className="panel-action-btn danger" onClick={() => setShowDeleteConfirm(true)} title="Delete task">
               <Trash2 size={15} />
             </button>
             <button className="panel-action-btn" onClick={onClose} title="Close">
@@ -86,88 +136,39 @@ const TaskDetailPanel = ({ task, onClose }) => {
         {/* Content */}
         <div className="panel-content">
           <div className="panel-section">
-            <textarea
-              className="panel-title-textarea"
-              placeholder="Task title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={handleBlur}
-              rows={1}
-            />
+            <textarea className="panel-title-textarea" placeholder="Task title"
+              value={title} onChange={markDirty(setTitle)} onBlur={handleBlur} rows={1} />
           </div>
 
           <div className="panel-meta-grid">
-            <div className="panel-meta-label">
-              <Layers size={12} className="inline mr-2" /> Status
-            </div>
-            <select
-              className="panel-select"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              onBlur={handleBlur}
-            >
+            <div className="panel-meta-label"><Layers size={12} className="inline mr-2" /> Status</div>
+            <select className="panel-select" value={status} onChange={handleStatusChange}>
               {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
             </select>
 
-            <div className="panel-meta-label">
-              <CheckCircle size={12} className="inline mr-2" /> Priority
-            </div>
-            <select
-              className="panel-select"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              onBlur={handleBlur}
-            >
+            <div className="panel-meta-label"><CheckCircle size={12} className="inline mr-2" /> Priority</div>
+            <select className="panel-select" value={priority} onChange={handlePriorityChange}>
               {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
 
-            <div className="panel-meta-label">
-              <Tag size={12} className="inline mr-2" /> Label
-            </div>
-            <input
-              className="panel-input"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              onBlur={handleBlur}
-              placeholder="Add label..."
-            />
+            <div className="panel-meta-label"><Tag size={12} className="inline mr-2" /> Label</div>
+            <input className="panel-input" value={label} onChange={markDirty(setLabel)} onBlur={handleBlur} placeholder="Add label..." />
 
-            <div className="panel-meta-label">
-              <Calendar size={12} className="inline mr-2" /> Due Date
-            </div>
-            <input
-              type="date"
-              className="panel-date-input"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              onBlur={handleBlur}
-            />
+            <div className="panel-meta-label"><Calendar size={12} className="inline mr-2" /> Due Date</div>
+            <input type="date" className="panel-date-input" value={dueDate} onChange={handleDateChange} />
           </div>
 
           <div className="panel-section">
             <label className="panel-meta-label mb-2">Description</label>
-            <textarea
-              className="panel-description-textarea"
-              placeholder="Add a detailed description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onBlur={handleBlur}
-            />
+            <textarea className="panel-description-textarea" placeholder="Add a detailed description..."
+              value={description} onChange={markDirty(setDescription)} onBlur={handleBlur} />
           </div>
         </div>
 
         {/* Footer */}
         <div className="panel-footer">
-          <div className="panel-status">
-            {saving ? 'Saving...' : 'All changes saved'}
-          </div>
-          <button
-            className="panel-save-btn"
-            onClick={handleSave}
-            disabled={saving || !title.trim()}
-          >
-            Save
-          </button>
+          <div className={`panel-status ${dirty ? 'unsaved' : ''}`}>{statusText}</div>
+          <button className="panel-save-btn" onClick={handleSave} disabled={saving || !title.trim() || !dirty}>Save</button>
         </div>
 
         {/* Delete Confirmation */}
